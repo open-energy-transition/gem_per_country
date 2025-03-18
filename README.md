@@ -11,7 +11,7 @@ This repository hosts the **GEM per Country Power Tracker** web application. The
 
 ## Data Source
 
-The power plant data is sourced from [Global Energy Monitor](https://globalenergymonitor.org/) and is made available under the [Creative Commons Attribution 4.0 License](https://creativecommons.org/licenses/by/4.0/).
+The power plant data is sourced from [Global Energy Monitor](https://globalenergymonitor.org/) and is made available under the [Creative Commons Attribution 4.0 License](https://globalenergymonitor.org/creative-commons-public-license/).
 
 ## Getting Started
 
