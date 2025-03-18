@@ -24,4 +24,4 @@ No special dependencies are required for running this application locally.
 1. **Clone the Repository:**
 
    ```bash
-   git clone https://github.com/yourusername/your-repository-name.git
+   git clone git@github.com:open-energy-transition/gem_per_country.git
