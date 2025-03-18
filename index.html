@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Global Energy Monitor Power Tracker</title>
+  <title>GEM per Country Power Tracker</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     @import url(https://fonts.googleapis.com/css?family=Open+Sans);
@@ -27,10 +27,10 @@
     .login h1 {
       color:#fff; text-shadow:0 0 10px rgba(0,0,0,0.3); letter-spacing:1px; text-align:center; margin-bottom:20px;
     }
-    input, select {
+    input {
       width:100%; margin-bottom:10px; background:rgba(0,0,0,0.3); border:none; outline:none; padding:10px; font-size:13px; color:#fff; text-shadow:1px 1px 1px rgba(0,0,0,0.3); border:1px solid rgba(0,0,0,0.3); border-radius:4px; box-shadow:inset 0 -5px 45px rgba(100,100,100,0.2),0 1px 1px rgba(255,255,255,0.2); transition:box-shadow .5s ease;
     }
-    input:focus, select:focus {
+    input:focus {
       box-shadow:inset 0 -5px 45px rgba(100,100,100,0.4),0 1px 1px rgba(255,255,255,0.2);
     }
     #status {
@@ -60,27 +60,77 @@
     .pagination span {
       margin:0 5px;
     }
+    .dropdown {
+      position: relative;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+    .dropdown-button {
+      background: #000;
+      border: 1px solid #000;
+      padding: 10px;
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .dropdown-options {
+      position: absolute;
+      background: #000;
+      border: 1px solid #000;
+      border-radius: 4px;
+      max-height: 200px;
+      overflow-y: auto;
+      width: 100%;
+      z-index: 100;
+      display: none;
+    }
+    .dropdown-options label {
+      display: block;
+      padding: 5px 10px;
+      cursor: pointer;
+      color: #fff;
+    }
+    .dropdown-options label:hover {
+      background: #222;
+    }
+    .source-link {
+      font-size: 10px;
+      text-align: center;
+      margin-top: 15px;
+      color: #fff;
+    }
+    .source-link a {
+      color: #fff;
+      text-decoration: none;
+    }
+    .source-link a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
   <div class="login">
-    <h1>GEM Per Country Power Tracker</h1>
+    <h1>GEM per Country Power Tracker</h1>
     <label for="countryInput" style="color:#fff;">Enter a country name:</label>
     <input type="text" id="countryInput" placeholder="Country name"/>
-    <label for="statusSelect" style="color:#fff;">Status of Powe Plant:</label>
-    <select id="statusSelect">
-      <option value="all">All</option>
-    </select>
+    <label style="color:#fff;">Select Status(es):</label>
+    <div id="statusDropdown" class="dropdown">
+      <div id="dropdownButton" class="dropdown-button">Loading statuses...</div>
+      <div id="dropdownOptions" class="dropdown-options"></div>
+    </div>
     <div class="btn-group">
       <button id="previewBtn" class="btn" style="flex:1;">Preview</button>
       <button id="downloadBtn" class="btn btn-primary" style="flex:1;">Download GeoJSON</button>
     </div>
     <p id="status"></p>
+    <p class="source-link">
+      Source: <a href="https://globalenergymonitor.org/" target="_blank">Global Energy Monitor</a>, under CC BY 4.0 license.
+    </p>
   </div>
   <div id="previewContainer"></div>
   <script>
     const excelUrl="https://open-energy-transition.github.io/global_energy_monitor_power_tracker/Global-Integrated-Power-February-2025-update-II.xlsx";
-    let sheetData=[],filteredData=[],currentPage=1;
+    let sheetData=[], filteredData=[], currentPage=1;
     const rowsPerPage=2000;
     async function fetchAndProcessExcel(){
       document.getElementById("status").textContent="Fetching Global Power Plant data, please wait...";
@@ -94,41 +144,98 @@
         sheetData=XLSX.utils.sheet_to_json(ws,{defval:""});
         sheetData.forEach(row=>{
           row["Country/area"]=row["Country/area"]?row["Country/area"].trim().toLowerCase():"";
-          let lat=parseFloat(row["Latitude"]),lon=parseFloat(row["Longitude"]);
+          let lat=parseFloat(row["Latitude"]), lon=parseFloat(row["Longitude"]);
           row["Latitude"]=isNaN(lat)?0:lat;
           row["Longitude"]=isNaN(lon)?0:lon;
         });
         document.getElementById("status").textContent="Global Power plant data loaded successfully!";
-        populateStatusFilter();
+        populateStatusDropdown();
       }catch(e){
         document.getElementById("status").textContent="Error: "+e.message;
       }
     }
-    function populateStatusFilter(){
-      const select=document.getElementById("statusSelect");
-      select.innerHTML='<option value="all">All</option>';
+    function populateStatusDropdown(){
+      const dropdownOptions=document.getElementById("dropdownOptions");
+      dropdownOptions.innerHTML="";
       const statusSet=new Set();
       sheetData.forEach(row=>{
         if(row["Status"] && row["Status"].trim()!==""){
           statusSet.add(row["Status"].trim());
         }
       });
+      const allLabel=document.createElement("label");
+      const allCheckbox=document.createElement("input");
+      allCheckbox.type="checkbox";
+      allCheckbox.value="all";
+      allCheckbox.id="chk_all";
+      allLabel.appendChild(allCheckbox);
+      allLabel.appendChild(document.createTextNode(" All"));
+      dropdownOptions.appendChild(allLabel);
       Array.from(statusSet).sort().forEach(status=>{
-        const option=document.createElement("option");
-        option.value=status;
-        option.textContent=status;
-        select.appendChild(option);
+        const label=document.createElement("label");
+        const checkbox=document.createElement("input");
+        checkbox.type="checkbox";
+        checkbox.value=status;
+        checkbox.id="chk_"+status;
+        label.appendChild(checkbox);
+        label.appendChild(document.createTextNode(" "+status));
+        dropdownOptions.appendChild(label);
       });
+      updateDropdownButton();
+      const checkboxes=dropdownOptions.querySelectorAll("input[type='checkbox']");
+      checkboxes.forEach(chk=>{
+        chk.addEventListener("change", function(e){
+          if(this.value==="all" && this.checked){
+            checkboxes.forEach(cb=>{
+              if(cb.value!=="all") cb.checked=false;
+            });
+          } else if(this.value!=="all" && this.checked){
+            const allCb=dropdownOptions.querySelector("input[value='all']");
+            if(allCb.checked) allCb.checked=false;
+          }
+          updateDropdownButton();
+        });
+      });
+    }
+    function updateDropdownButton(){
+      const dropdownOptions=document.getElementById("dropdownOptions");
+      const checkboxes=dropdownOptions.querySelectorAll("input[type='checkbox']");
+      let selected = [];
+      checkboxes.forEach(chk=>{
+        if(chk.checked) selected.push(chk.value);
+      });
+      const button=document.getElementById("dropdownButton");
+      if(selected.length===0 || selected.includes("all")){
+        button.textContent="All";
+      } else {
+        button.textContent=selected.join(", ");
+      }
+    }
+    document.getElementById("dropdownButton").addEventListener("click", function(e){
+      const options=document.getElementById("dropdownOptions");
+      options.style.display = options.style.display === "block" ? "none" : "block";
+      e.stopPropagation();
+    });
+    document.addEventListener("click", function(){
+      document.getElementById("dropdownOptions").style.display="none";
+    });
+    function getSelectedStatuses(){
+      const dropdownOptions=document.getElementById("dropdownOptions");
+      const checkboxes=dropdownOptions.querySelectorAll("input[type='checkbox']");
+      let selected = [];
+      checkboxes.forEach(chk=>{
+        if(chk.checked) selected.push(chk.value);
+      });
+      return selected;
     }
     function filterData(){
       const country=document.getElementById("countryInput").value.trim().toLowerCase();
       if(!country){alert("Please enter a country name.");return[];}
       if(!sheetData.length){alert("No data loaded yet.");return[];}
       let filtered=sheetData.filter(r=>r["Country/area"]===country);
-      const status=document.getElementById("statusSelect").value;
-      if(status!=="all"){
-        filtered=filtered.filter(r=>r["Status"]===status);
-      }
+      const selectedStatuses=getSelectedStatuses();
+      if(selectedStatuses.length===0 || selectedStatuses.includes("all")) return filtered;
+      filtered=filtered.filter(r=>selectedStatuses.includes(r["Status"].trim()));
       return filtered;
     }
     function previewData(data,page=1){
@@ -141,7 +248,7 @@
       if(page>totalPages) page=totalPages;
       const startIndex=(page-1)*rowsPerPage;
       const endIndex=startIndex+rowsPerPage;
-      const pageData=data.slice(startIndex,endIndex);
+      const pageData=data.slice(startIndex, endIndex);
       const table=document.createElement("table");
       const thead=document.createElement("thead");
       const tbody=document.createElement("tbody");
@@ -188,7 +295,7 @@
       return {type:"FeatureCollection",features:d.map(r=>({type:"Feature",geometry:{type:"Point",coordinates:[r["Longitude"],r["Latitude"]]},properties:r}))};
     }
     function downloadGeoJSON(g,n){
-      const fn=n.replace(/\s+/g,"_")+"_power_plant_tracker.geojson";
+      const fn=n.replace(/\s+/g,"_")+"_power_tracker.geojson";
       const ds="data:application/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(g,null,2));
       const a=document.createElement("a");
       a.href=ds;
