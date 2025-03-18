@@ -1,0 +1,32 @@
+name: Update Excel
+
+permissions:
+  contents: write
+
+
+on:
+  schedule:
+    - cron: "0 0 * * *" 
+  workflow_dispatch:
+
+jobs:
+  update-file:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
+
+      - name: Download Excel file
+        run: |
+          curl -L -o Global-Integrated-Power-February-2025-update-II.xlsx \
+            https://globalenergymonitor.org/wp-content/uploads/2025/02/Global-Integrated-Power-February-2025-update-II.xlsx
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add Global-Integrated-Power-February-2025-update-II.xlsx
+          git diff --quiet && git diff --staged --quiet || git commit -m "Update GEM PP Tracker file"
+      
+      - name: Push changes
+        run: git push
