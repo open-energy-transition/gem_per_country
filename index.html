@@ -113,11 +113,21 @@
     <h1>GEM per Country Power Tracker</h1>
     <label for="countryInput" style="color:#fff;">Enter a country name:</label>
     <input type="text" id="countryInput" placeholder="Country name"/>
+    
+    <!-- Status Dropdown -->
     <label style="color:#fff;">Select Status(es):</label>
     <div id="statusDropdown" class="dropdown">
       <div id="dropdownButton" class="dropdown-button">Loading statuses...</div>
       <div id="dropdownOptions" class="dropdown-options"></div>
     </div>
+    
+    <!-- Location Accuracy Dropdown -->
+    <label style="color:#fff;">Select Location Accuracy:</label>
+    <div id="locationDropdown" class="dropdown">
+      <div id="locationDropdownButton" class="dropdown-button">Loading location accuracy...</div>
+      <div id="locationDropdownOptions" class="dropdown-options"></div>
+    </div>
+    
     <div class="btn-group">
       <button id="previewBtn" class="btn" style="flex:1;">Preview</button>
       <button id="downloadBtn" class="btn btn-primary" style="flex:1;">Download GeoJSON</button>
@@ -129,142 +139,237 @@
   </div>
   <div id="previewContainer"></div>
   <script>
-    const excelUrl="https://open-energy-transition.github.io/global_energy_monitor_power_tracker/Global-Integrated-Power-February-2025-update-II.xlsx";
-    let sheetData=[], filteredData=[], currentPage=1;
-    const rowsPerPage=2000;
+    const excelUrl = "https://open-energy-transition.github.io/global_energy_monitor_power_tracker/Global-Integrated-Power-February-2025-update-II.xlsx";
+    let sheetData = [], filteredData = [], currentPage = 1;
+    const rowsPerPage = 2000;
+    
     async function fetchAndProcessExcel(){
-      document.getElementById("status").textContent="Fetching Global Power Plant data, please wait...";
+      document.getElementById("status").textContent = "Fetching Global Power Plant data, please wait...";
       try{
-        const r=await fetch(excelUrl);
-        if(!r.ok)throw new Error("Failed to fetch (Status: "+r.status+")");
-        const buf=await r.arrayBuffer();
-        const wb=XLSX.read(buf,{type:"array"});
-        if(wb.SheetNames<2)throw new Error("Workbook missing second sheet.");
-        const ws=wb.Sheets[wb.SheetNames[1]];
-        sheetData=XLSX.utils.sheet_to_json(ws,{defval:""});
-        sheetData.forEach(row=>{
-          row["Country/area"]=row["Country/area"]?row["Country/area"].trim().toLowerCase():"";
-          let lat=parseFloat(row["Latitude"]), lon=parseFloat(row["Longitude"]);
-          row["Latitude"]=isNaN(lat)?0:lat;
-          row["Longitude"]=isNaN(lon)?0:lon;
+        const r = await fetch(excelUrl);
+        if(!r.ok) throw new Error("Failed to fetch (Status: " + r.status + ")");
+        const buf = await r.arrayBuffer();
+        const wb = XLSX.read(buf, {type:"array"});
+        if(wb.SheetNames.length < 2) throw new Error("Workbook missing second sheet.");
+        const ws = wb.Sheets[wb.SheetNames[1]];
+        sheetData = XLSX.utils.sheet_to_json(ws, {defval:""});
+        sheetData.forEach(row => {
+          row["Country/area"] = row["Country/area"] ? row["Country/area"].trim().toLowerCase() : "";
+          let lat = parseFloat(row["Latitude"]), lon = parseFloat(row["Longitude"]);
+          row["Latitude"] = isNaN(lat) ? 0 : lat;
+          row["Longitude"] = isNaN(lon) ? 0 : lon;
         });
-        document.getElementById("status").textContent="Global Power plant data loaded successfully!";
+        document.getElementById("status").textContent = "Global Power plant data loaded successfully!";
         populateStatusDropdown();
-      }catch(e){
-        document.getElementById("status").textContent="Error: "+e.message;
+        populateLocationDropdown();  // Populate the new Location Accuracy dropdown
+      } catch(e) {
+        document.getElementById("status").textContent = "Error: " + e.message;
       }
     }
+    
     function populateStatusDropdown(){
-      const dropdownOptions=document.getElementById("dropdownOptions");
-      dropdownOptions.innerHTML="";
-      const statusSet=new Set();
-      sheetData.forEach(row=>{
-        if(row["Status"] && row["Status"].trim()!==""){
+      const dropdownOptions = document.getElementById("dropdownOptions");
+      dropdownOptions.innerHTML = "";
+      const statusSet = new Set();
+      sheetData.forEach(row => {
+        if(row["Status"] && row["Status"].trim() !== ""){
           statusSet.add(row["Status"].trim());
         }
       });
-      const allLabel=document.createElement("label");
-      const allCheckbox=document.createElement("input");
-      allCheckbox.type="checkbox";
-      allCheckbox.value="all";
-      allCheckbox.id="chk_all";
+      const allLabel = document.createElement("label");
+      const allCheckbox = document.createElement("input");
+      allCheckbox.type = "checkbox";
+      allCheckbox.value = "all";
+      allCheckbox.id = "chk_all";
       allLabel.appendChild(allCheckbox);
       allLabel.appendChild(document.createTextNode(" All"));
       dropdownOptions.appendChild(allLabel);
-      Array.from(statusSet).sort().forEach(status=>{
-        const label=document.createElement("label");
-        const checkbox=document.createElement("input");
-        checkbox.type="checkbox";
-        checkbox.value=status;
-        checkbox.id="chk_"+status;
+      Array.from(statusSet).sort().forEach(status => {
+        const label = document.createElement("label");
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.value = status;
+        checkbox.id = "chk_" + status;
         label.appendChild(checkbox);
-        label.appendChild(document.createTextNode(" "+status));
+        label.appendChild(document.createTextNode(" " + status));
         dropdownOptions.appendChild(label);
       });
       updateDropdownButton();
-      const checkboxes=dropdownOptions.querySelectorAll("input[type='checkbox']");
-      checkboxes.forEach(chk=>{
+      const checkboxes = dropdownOptions.querySelectorAll("input[type='checkbox']");
+      checkboxes.forEach(chk => {
         chk.addEventListener("change", function(e){
-          if(this.value==="all" && this.checked){
-            checkboxes.forEach(cb=>{
-              if(cb.value!=="all") cb.checked=false;
+          if(this.value === "all" && this.checked){
+            checkboxes.forEach(cb => {
+              if(cb.value !== "all") cb.checked = false;
             });
-          } else if(this.value!=="all" && this.checked){
-            const allCb=dropdownOptions.querySelector("input[value='all']");
-            if(allCb.checked) allCb.checked=false;
+          } else if(this.value !== "all" && this.checked){
+            const allCb = dropdownOptions.querySelector("input[value='all']");
+            if(allCb.checked) allCb.checked = false;
           }
           updateDropdownButton();
         });
       });
     }
+    
     function updateDropdownButton(){
-      const dropdownOptions=document.getElementById("dropdownOptions");
-      const checkboxes=dropdownOptions.querySelectorAll("input[type='checkbox']");
+      const dropdownOptions = document.getElementById("dropdownOptions");
+      const checkboxes = dropdownOptions.querySelectorAll("input[type='checkbox']");
       let selected = [];
-      checkboxes.forEach(chk=>{
+      checkboxes.forEach(chk => {
         if(chk.checked) selected.push(chk.value);
       });
-      const button=document.getElementById("dropdownButton");
-      if(selected.length===0 || selected.includes("all")){
-        button.textContent="All";
+      const button = document.getElementById("dropdownButton");
+      if(selected.length === 0 || selected.includes("all")){
+        button.textContent = "All";
       } else {
-        button.textContent=selected.join(", ");
+        button.textContent = selected.join(", ");
       }
     }
+    
+    // New functions for Location Accuracy dropdown
+    function populateLocationDropdown(){
+      const dropdownOptions = document.getElementById("locationDropdownOptions");
+      dropdownOptions.innerHTML = "";
+      const accuracySet = new Set();
+      sheetData.forEach(row => {
+        if(row["Location accuracy"] && row["Location accuracy"].trim() !== ""){
+          accuracySet.add(row["Location accuracy"].trim());
+        }
+      });
+      const allLabel = document.createElement("label");
+      const allCheckbox = document.createElement("input");
+      allCheckbox.type = "checkbox";
+      allCheckbox.value = "all";
+      allCheckbox.id = "chk_loc_all";
+      allLabel.appendChild(allCheckbox);
+      allLabel.appendChild(document.createTextNode(" All"));
+      dropdownOptions.appendChild(allLabel);
+      Array.from(accuracySet).sort().forEach(accuracy => {
+        const label = document.createElement("label");
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.value = accuracy;
+        checkbox.id = "chk_loc_" + accuracy;
+        label.appendChild(checkbox);
+        label.appendChild(document.createTextNode(" " + accuracy));
+        dropdownOptions.appendChild(label);
+      });
+      updateLocationDropdownButton();
+      const checkboxes = dropdownOptions.querySelectorAll("input[type='checkbox']");
+      checkboxes.forEach(chk => {
+        chk.addEventListener("change", function(e){
+          if(this.value === "all" && this.checked){
+            checkboxes.forEach(cb => {
+              if(cb.value !== "all") cb.checked = false;
+            });
+          } else if(this.value !== "all" && this.checked){
+            const allCb = dropdownOptions.querySelector("input[value='all']");
+            if(allCb.checked) allCb.checked = false;
+          }
+          updateLocationDropdownButton();
+        });
+      });
+    }
+    
+    function updateLocationDropdownButton(){
+      const dropdownOptions = document.getElementById("locationDropdownOptions");
+      const checkboxes = dropdownOptions.querySelectorAll("input[type='checkbox']");
+      let selected = [];
+      checkboxes.forEach(chk => {
+        if(chk.checked) selected.push(chk.value);
+      });
+      const button = document.getElementById("locationDropdownButton");
+      if(selected.length === 0 || selected.includes("all")){
+        button.textContent = "All";
+      } else {
+        button.textContent = selected.join(", ");
+      }
+    }
+    
+    // Event listeners for dropdown buttons
     document.getElementById("dropdownButton").addEventListener("click", function(e){
-      const options=document.getElementById("dropdownOptions");
+      const options = document.getElementById("dropdownOptions");
+      options.style.display = options.style.display === "block" ? "none" : "block";
+      e.stopPropagation();
+    });
+    document.getElementById("locationDropdownButton").addEventListener("click", function(e){
+      const options = document.getElementById("locationDropdownOptions");
       options.style.display = options.style.display === "block" ? "none" : "block";
       e.stopPropagation();
     });
     document.addEventListener("click", function(){
-      document.getElementById("dropdownOptions").style.display="none";
+      document.getElementById("dropdownOptions").style.display = "none";
+      document.getElementById("locationDropdownOptions").style.display = "none";
     });
+    
     function getSelectedStatuses(){
-      const dropdownOptions=document.getElementById("dropdownOptions");
-      const checkboxes=dropdownOptions.querySelectorAll("input[type='checkbox']");
+      const dropdownOptions = document.getElementById("dropdownOptions");
+      const checkboxes = dropdownOptions.querySelectorAll("input[type='checkbox']");
       let selected = [];
-      checkboxes.forEach(chk=>{
+      checkboxes.forEach(chk => {
         if(chk.checked) selected.push(chk.value);
       });
       return selected;
     }
+    
+    function getSelectedLocationAccuracies(){
+      const dropdownOptions = document.getElementById("locationDropdownOptions");
+      const checkboxes = dropdownOptions.querySelectorAll("input[type='checkbox']");
+      let selected = [];
+      checkboxes.forEach(chk => {
+        if(chk.checked) selected.push(chk.value);
+      });
+      return selected;
+    }
+    
     function filterData(){
-      const country=document.getElementById("countryInput").value.trim().toLowerCase();
-      if(!country){alert("Please enter a country name.");return[];}
-      if(!sheetData.length){alert("No data loaded yet.");return[];}
-      let filtered=sheetData.filter(r=>r["Country/area"]===country);
-      const selectedStatuses=getSelectedStatuses();
-      if(selectedStatuses.length===0 || selectedStatuses.includes("all")) return filtered;
-      filtered=filtered.filter(r=>selectedStatuses.includes(r["Status"].trim()));
+      const country = document.getElementById("countryInput").value.trim().toLowerCase();
+      if(!country){ alert("Please enter a country name."); return []; }
+      if(!sheetData.length){ alert("No data loaded yet."); return []; }
+      let filtered = sheetData.filter(r => r["Country/area"] === country);
+      
+      // Filter by Status if selected
+      const selectedStatuses = getSelectedStatuses();
+      if(selectedStatuses.length !== 0 && !selectedStatuses.includes("all")){
+        filtered = filtered.filter(r => selectedStatuses.includes(r["Status"].trim()));
+      }
+      
+      // Filter by Location Accuracy if selected
+      const selectedAccuracies = getSelectedLocationAccuracies();
+      if(selectedAccuracies.length !== 0 && !selectedAccuracies.includes("all")){
+        filtered = filtered.filter(r => selectedAccuracies.includes(r["Location accuracy"].trim()));
+      }
+      
       return filtered;
     }
-    function previewData(data,page=1){
-      currentPage=page;
-      const container=document.getElementById("previewContainer");
-      container.innerHTML="";
-      if(!data.length){container.textContent="No data found.";return;}
-      const totalPages=Math.ceil(data.length/rowsPerPage);
-      if(page<1) page=1;
-      if(page>totalPages) page=totalPages;
-      const startIndex=(page-1)*rowsPerPage;
-      const endIndex=startIndex+rowsPerPage;
-      const pageData=data.slice(startIndex, endIndex);
-      const table=document.createElement("table");
-      const thead=document.createElement("thead");
-      const tbody=document.createElement("tbody");
-      const cols=Object.keys(pageData[0]);
-      const headerRow=document.createElement("tr");
-      cols.forEach(col=>{
-        const th=document.createElement("th");
-        th.textContent=col;
+    
+    function previewData(data, page = 1){
+      currentPage = page;
+      const container = document.getElementById("previewContainer");
+      container.innerHTML = "";
+      if(!data.length){ container.textContent = "No data found."; return; }
+      const totalPages = Math.ceil(data.length / rowsPerPage);
+      if(page < 1) page = 1;
+      if(page > totalPages) page = totalPages;
+      const startIndex = (page - 1) * rowsPerPage;
+      const endIndex = startIndex + rowsPerPage;
+      const pageData = data.slice(startIndex, endIndex);
+      const table = document.createElement("table");
+      const thead = document.createElement("thead");
+      const tbody = document.createElement("tbody");
+      const cols = Object.keys(pageData[0]);
+      const headerRow = document.createElement("tr");
+      cols.forEach(col => {
+        const th = document.createElement("th");
+        th.textContent = col;
         headerRow.appendChild(th);
       });
       thead.appendChild(headerRow);
-      pageData.forEach(row=>{
-        const tr=document.createElement("tr");
-        cols.forEach(col=>{
-          const td=document.createElement("td");
-          td.textContent=row[col];
+      pageData.forEach(row => {
+        const tr = document.createElement("tr");
+        cols.forEach(col => {
+          const td = document.createElement("td");
+          td.textContent = row[col];
           tr.appendChild(td);
         });
         tbody.appendChild(tr);
@@ -272,46 +377,61 @@
       table.appendChild(thead);
       table.appendChild(tbody);
       container.appendChild(table);
-      if(totalPages>1){
-        const pagination=document.createElement("div");
-        pagination.className="pagination";
-        const prevBtn=document.createElement("button");
-        prevBtn.textContent="Previous";
-        prevBtn.disabled=page===1;
-        prevBtn.addEventListener("click",()=>previewData(data,page-1));
+      if(totalPages > 1){
+        const pagination = document.createElement("div");
+        pagination.className = "pagination";
+        const prevBtn = document.createElement("button");
+        prevBtn.textContent = "Previous";
+        prevBtn.disabled = page === 1;
+        prevBtn.addEventListener("click", () => previewData(data, page - 1));
         pagination.appendChild(prevBtn);
-        const pageInfo=document.createElement("span");
-        pageInfo.textContent="Page "+page+" of "+totalPages;
+        const pageInfo = document.createElement("span");
+        pageInfo.textContent = "Page " + page + " of " + totalPages;
         pagination.appendChild(pageInfo);
-        const nextBtn=document.createElement("button");
-        nextBtn.textContent="Next";
-        nextBtn.disabled=page===totalPages;
-        nextBtn.addEventListener("click",()=>previewData(data,page+1));
+        const nextBtn = document.createElement("button");
+        nextBtn.textContent = "Next";
+        nextBtn.disabled = page === totalPages;
+        nextBtn.addEventListener("click", () => previewData(data, page + 1));
         pagination.appendChild(nextBtn);
         container.appendChild(pagination);
       }
     }
+    
     function generateGeoJSON(d){
-      return {type:"FeatureCollection",features:d.map(r=>({type:"Feature",geometry:{type:"Point",coordinates:[r["Longitude"],r["Latitude"]]},properties:r}))};
+      return {
+        type: "FeatureCollection",
+        features: d.map(r => ({
+          type: "Feature",
+          geometry: {
+            type: "Point",
+            coordinates: [r["Longitude"], r["Latitude"]]
+          },
+          properties: r
+        }))
+      };
     }
-    function downloadGeoJSON(g,n){
-      const fn=n.replace(/\s+/g,"_")+"_power_tracker.geojson";
-      const ds="data:application/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(g,null,2));
-      const a=document.createElement("a");
-      a.href=ds;
-      a.download=fn;
+    
+    function downloadGeoJSON(g, n){
+      const fn = n.replace(/\s+/g, "_") + "_power_tracker.geojson";
+      const ds = "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(g, null, 2));
+      const a = document.createElement("a");
+      a.href = ds;
+      a.download = fn;
       a.click();
     }
-    document.getElementById("previewBtn").addEventListener("click",()=>{
-      filteredData=filterData();
-      previewData(filteredData,1);
+    
+    document.getElementById("previewBtn").addEventListener("click", () => {
+      filteredData = filterData();
+      previewData(filteredData, 1);
     });
-    document.getElementById("downloadBtn").addEventListener("click",()=>{
-      if(!filteredData.length){alert("No data to download.");return;}
-      const country=document.getElementById("countryInput").value.trim().toLowerCase();
-      downloadGeoJSON(generateGeoJSON(filteredData),country);
+    
+    document.getElementById("downloadBtn").addEventListener("click", () => {
+      if(!filteredData.length){ alert("No data to download."); return; }
+      const country = document.getElementById("countryInput").value.trim().toLowerCase();
+      downloadGeoJSON(generateGeoJSON(filteredData), country);
     });
-    window.addEventListener("load",fetchAndProcessExcel);
+    
+    window.addEventListener("load", fetchAndProcessExcel);
   </script>
 </body>
 </html>
