@@ -5,7 +5,8 @@ This repository hosts the **GEM per Country Power Tracker** web application. The
 ## Overview
 
 - **Country Filtering:** Input a country name to display power plant data for that region.
-- **Status Filtering:** A dropdown with checkboxes lets you select one or more power plant statuses. 
+- **Status Filtering:** A dropdown with checkboxes lets you select one or more power plant statuses.
+- **Location Accuracy:** A dropdown that allows you to filter by the location accuracy of each power plant returned.
 - **Pagination:** The data preview is paginated to show 2000 rows per page.
 - **GeoJSON Download:** Export your filtered data as a GeoJSON file.
 
