@@ -2,436 +2,322 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>GEM per Country Power Tracker</title>
+  <title>GEM per Country Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <!-- ===== MAIN THEME & LAYOUT ===== -->
   <style>
-    @import url(https://fonts.googleapis.com/css?family=Open+Sans);
-    .btn {
-      display:inline-block; padding:4px 10px; margin-bottom:0; font-size:13px; line-height:18px; color:#333; text-align:center; text-shadow:0 1px 1px rgba(255,255,255,0.75); vertical-align:middle; background-color:#f5f5f5; background-image:-moz-linear-gradient(top,#fff,#e6e6e6); background-image:-ms-linear-gradient(top,#fff,#e6e6e6); background-image:-webkit-gradient(linear,0 0,0 100%,from(#fff),to(#e6e6e6)); background-image:-webkit-linear-gradient(top,#fff,#e6e6e6); background-image:-o-linear-gradient(top,#fff,#e6e6e6); background-image:linear-gradient(top,#fff,#e6e6e6); background-repeat:repeat-x; border:1px solid #e6e6e6; border-radius:4px; box-shadow:inset 0 1px 0 rgba(255,255,255,0.2),0 1px 2px rgba(0,0,0,0.05); cursor:pointer;
+    :root{
+      --bg1:#0f2027; --bg2:#203a43; --bg3:#2c5364;
+      --c-primary:#00aaff; --c-card:#ffffff10; --c-text:#ffffff;
+      --radius:8px;
     }
-    .btn:hover {
-      background-color:#e6e6e6; text-decoration:none; color:#333;
+    *{box-sizing:border-box;font-family:'Inter',sans-serif;}
+    body{
+      margin:0;min-height:100vh;
+      background:linear-gradient(120deg,var(--bg1),var(--bg2),var(--bg3));
+      display:flex;flex-direction:column;align-items:center;padding:20px;
+      color:var(--c-text);
     }
-    .btn-primary {
-      background-color:#4a77d4; background-image:-moz-linear-gradient(top,#6eb6de,#4a77d4); background-image:-ms-linear-gradient(top,#6eb6de,#4a77d4); background-image:-webkit-gradient(linear,0 0,0 100%,from(#6eb6de),to(#4a77d4)); background-image:-webkit-linear-gradient(top,#6eb6de,#4a77d4); background-image:-o-linear-gradient(top,#6eb6de,#4a77d4); background-image:linear-gradient(top,#6eb6de,#4a77d4); background-repeat:repeat-x; border:1px solid #3762bc; text-shadow:1px 1px 1px rgba(0,0,0,0.4); color:#fff; box-shadow:inset 0 1px 0 rgba(255,255,255,0.2),0 1px 2px rgba(0,0,0,0.5);
+    h1{margin:0 0 10px;font-size:28px;font-weight:700;text-align:center}
+
+    /* ---------- card ---------- */
+    .card{
+      width:100%;max-width:500px;background:var(--c-card);
+      backdrop-filter:blur(6px);padding:20px;border-radius:var(--radius);
+      box-shadow:0 4px 8px rgba(0,0,0,.3);
     }
-    .btn-primary:hover {
-      background-color:#4a77d4; color:#fff;
+    label{display:block;margin:15px 0 4px;font-weight:600;font-size:14px}
+
+    /* ---------- single-select look ---------- */
+    .select-wrapper{position:relative}
+    .select-wrapper select{
+      width:100%;padding:10px;border:none;border-radius:var(--radius);
+      background:#000000cc;color:var(--c-text);font-size:14px;outline:none;
+      -webkit-appearance:none;-moz-appearance:none;appearance:none;cursor:pointer;
     }
-    html,body {
-      width:100%; height:100%; margin:0; padding:0; font-family:'Open Sans',sans-serif; background:#092756; background:-moz-radial-gradient(0% 100%,ellipse cover,rgba(104,128,138,0.4) 10%,rgba(138,114,76,0) 40%),-moz-linear-gradient(top,rgba(57,173,219,0.25) 0%,rgba(42,60,87,0.4) 100%),-moz-linear-gradient(-45deg,#670d10 0%,#092756 100%); background:-webkit-radial-gradient(0% 100%,ellipse cover,rgba(104,128,138,0.4) 10%,rgba(138,114,76,0) 40%),-webkit-linear-gradient(top,rgba(57,173,219,0.25) 0%,rgba(42,60,87,0.4) 100%),-webkit-linear-gradient(-45deg,#670d10 0%,#092756 100%); background-size:cover; overflow-y:auto;
+    .select-wrapper::after{
+      content:"▾";position:absolute;right:12px;top:50%;
+      transform:translateY(-50%);font-size:12px;color:var(--c-text);pointer-events:none;
     }
-    .login {
-      width:400px; margin:40px auto; background:rgba(0,0,0,0.25); padding:20px; border-radius:5px; box-shadow:0 0 10px rgba(0,0,0,0.3);
+
+    /* ---------- multi-select dropdowns ---------- */
+    .dropdown{position:relative}
+    .dropdown-button{
+      width:100%;padding:10px;border-radius:var(--radius);
+      background:#ffffff15;cursor:pointer;user-select:none;font-size:14px
     }
-    .login h1 {
-      color:#fff; text-shadow:0 0 10px rgba(0,0,0,0.3); letter-spacing:1px; text-align:center; margin-bottom:20px;
+    .dropdown-options{
+      position:absolute;left:0;right:0;top:calc(100% + 4px);
+      background:#000000cc;border-radius:var(--radius);
+      max-height:250px;overflow-y:auto;padding:10px;display:none;z-index:5
     }
-    input {
-      width:100%; margin-bottom:10px; background:rgba(0,0,0,0.3); border:none; outline:none; padding:10px; font-size:13px; color:#fff; text-shadow:1px 1px 1px rgba(0,0,0,0.3); border:1px solid rgba(0,0,0,0.3); border-radius:4px; box-shadow:inset 0 -5px 45px rgba(100,100,100,0.2),0 1px 1px rgba(255,255,255,0.2); transition:box-shadow .5s ease;
+    .dropdown-options label{
+      display:flex;align-items:center;font-size:13px;font-weight:400;margin-bottom:6px;cursor:pointer
     }
-    input:focus {
-      box-shadow:inset 0 -5px 45px rgba(100,100,100,0.4),0 1px 1px rgba(255,255,255,0.2);
+    .dropdown-options input{margin-right:6px}
+
+    /* ---------- buttons ---------- */
+    .btn-group{display:flex;gap:10px;margin-top:20px}
+    .btn{
+      flex:1;padding:10px 0;border:none;border-radius:var(--radius);
+      cursor:pointer;font-weight:600;font-size:14px;transition:.2s background
     }
-    #status {
-      color:#fff; text-align:center; margin-top:10px;
+    .btn-primary{background:var(--c-primary);color:#fff}
+    .btn:hover{filter:brightness(1.1)}
+
+    #status{margin-top:10px;font-size:13px;min-height:18px}
+    .source-link{font-size:12px;margin-top:10px;opacity:.8;text-align:center}
+    .source-link a{color:var(--c-primary)}
+
+    /* ---------- preview table ---------- */
+    #previewContainer{width:100%;max-width:1200px;margin-top:25px}
+    table{border-collapse:collapse;width:100%;background:#ffffff10;font-size:13px}
+    th,td{padding:8px 6px;border:1px solid #ffffff22;text-align:left}
+    th{background:#ffffff15}
+    tr:nth-child(even){background:#ffffff08}
+    .pagination{margin:10px 0;display:flex;gap:4px;justify-content:center;flex-wrap:wrap}
+    .pagination button{
+      padding:6px 10px;border:none;border-radius:var(--radius);
+      background:#ffffff25;color:#fff;cursor:pointer;font-size:12px
     }
-    #previewContainer {
-      margin:20px auto; background:rgba(255,255,255,0.9); border-radius:5px; text-align:center; width:75vw; height:75vh; overflow:auto; padding:10px;
-    }
-    table {
-      border-collapse:collapse; width:100%; min-width:600px; margin:0 auto;
-    }
-    th,td {
-      border:1px solid #ccc; padding:8px; text-align:left; color:#333;
-    }
-    th {
-      background-color:#add8e6; position:sticky; top:0; z-index:2;
-    }
-    .btn-group {
-      display:flex; gap:10px;
-    }
-    .pagination {
-      margin:10px 0; text-align:center;
-    }
-    .pagination button {
-      padding:5px 10px; margin:0 2px; font-size:14px; cursor:pointer;
-    }
-    .pagination span {
-      margin:0 5px;
-    }
-    .dropdown {
-      position: relative;
-      width: 100%;
-      margin-bottom: 10px;
-    }
-    .dropdown-button {
-      background: #000;
-      border: 1px solid #000;
-      padding: 10px;
-      color: #fff;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .dropdown-options {
-      position: absolute;
-      background: #000;
-      border: 1px solid #000;
-      border-radius: 4px;
-      max-height: 200px;
-      overflow-y: auto;
-      width: 100%;
-      z-index: 100;
-      display: none;
-    }
-    .dropdown-options label {
-      display: block;
-      padding: 5px 10px;
-      cursor: pointer;
-      color: #fff;
-    }
-    .dropdown-options label:hover {
-      background: #222;
-    }
-    .source-link {
-      font-size: 10px;
-      text-align: center;
-      margin-top: 15px;
-      color: #fff;
-    }
-    .source-link a {
-      color: #fff;
-      text-decoration: none;
-    }
-    .source-link a:hover {
-      text-decoration: underline;
-    }
+    .pagination button.active{background:var(--c-primary)}
+    .pagination button:hover{filter:brightness(1.15)}
   </style>
 </head>
 <body>
-  <div class="login">
-    <h1>GEM per Country Power Tracker</h1>
-    <label for="countryInput" style="color:#fff;">Enter a country name:</label>
-    <input type="text" id="countryInput" placeholder="Country name"/>
-    
-    <!-- Status Dropdown -->
-    <label style="color:#fff;">Select Status(es):</label>
+  <div class="card">
+    <h1>GEM per Country Tracker</h1>
+
+    <!-- DATASET SELECTOR -->
+    <label>Dataset</label>
+    <div class="select-wrapper">
+      <select id="datasetSelect">
+        <option value="power">Global Integrated Power </option>
+        <option value="steel">Global Iron & Steel </option>
+      </select>
+    </div>
+
+    <!-- COUNTRY -->
+    <label>Country / Area</label>
+    <div class="select-wrapper">
+      <select id="countrySelect"><option disabled selected>Loading…</option></select>
+    </div>
+
+    <!-- STATUS -->
+    <label>Status</label>
     <div id="statusDropdown" class="dropdown">
-      <div id="dropdownButton" class="dropdown-button">Loading statuses...</div>
+      <div id="dropdownButton" class="dropdown-button">All</div>
       <div id="dropdownOptions" class="dropdown-options"></div>
     </div>
-    
-    <!-- Location Accuracy Dropdown -->
-    <label style="color:#fff;">Select Location Accuracy:</label>
+
+    <!-- ACCURACY -->
+    <label>Coordinate accuracy</label>
     <div id="locationDropdown" class="dropdown">
-      <div id="locationDropdownButton" class="dropdown-button">Loading location accuracy...</div>
+      <div id="locationDropdownButton" class="dropdown-button">All</div>
       <div id="locationDropdownOptions" class="dropdown-options"></div>
     </div>
-    
+
+    <!-- ACTION BUTTONS -->
     <div class="btn-group">
-      <button id="previewBtn" class="btn" style="flex:1;">Preview</button>
-      <button id="downloadBtn" class="btn btn-primary" style="flex:1;">Download GeoJSON</button>
+      <button id="previewBtn"  class="btn">Preview</button>
+      <button id="downloadBtn" class="btn btn-primary">Download GeoJSON</button>
     </div>
+
     <p id="status"></p>
-    <p class="source-link">
-      Source: <a href="https://globalenergymonitor.org/" target="_blank">Global Energy Monitor</a>, under CC BY 4.0 license.
-    </p>
+    <p class="source-link">Source: <a href="https://globalenergymonitor.org/" target="_blank">Global Energy Monitor</a> (CC BY 4.0)</p>
   </div>
+
   <div id="previewContainer"></div>
-  <script>
-    const excelUrl = "https://open-energy-transition.github.io/global_energy_monitor_power_tracker/Global-Integrated-Power-February-2025-update-II.xlsx";
-    let sheetData = [], filteredData = [], currentPage = 1;
-    const rowsPerPage = 2000;
-    
-    async function fetchAndProcessExcel(){
-      document.getElementById("status").textContent = "Fetching Global Power Plant data, please wait...";
-      try{
-        const r = await fetch(excelUrl);
-        if(!r.ok) throw new Error("Failed to fetch (Status: " + r.status + ")");
-        const buf = await r.arrayBuffer();
-        const wb = XLSX.read(buf, {type:"array"});
-        if(wb.SheetNames.length < 2) throw new Error("Workbook missing second sheet.");
-        const ws = wb.Sheets[wb.SheetNames[1]];
-        sheetData = XLSX.utils.sheet_to_json(ws, {defval:""});
-        sheetData.forEach(row => {
-          row["Country/area"] = row["Country/area"] ? row["Country/area"].trim().toLowerCase() : "";
-          let lat = parseFloat(row["Latitude"]), lon = parseFloat(row["Longitude"]);
-          row["Latitude"] = isNaN(lat) ? 0 : lat;
-          row["Longitude"] = isNaN(lon) ? 0 : lon;
-        });
-        document.getElementById("status").textContent = "Global Power plant data loaded successfully!";
-        populateStatusDropdown();
-        populateLocationDropdown();  // Populate the new Location Accuracy dropdown
-      } catch(e) {
-        document.getElementById("status").textContent = "Error: " + e.message;
+
+<script>
+/* ---------------- DATASETS ---------------- */
+const DATASETS={
+  power:{
+    url:"https://open-energy-transition.github.io/global_energy_monitor_power_tracker/Global-Integrated-Power-February-2025-update-II.xlsx",
+    sheetIndex:1,
+    process:rows=>rows.map(r=>({
+      "Type":r["Type"],
+      "Plant / Project name":r["Plant / Project name"],
+      "Country/Area":r["Country/area"],
+      "Capacity (MW)":r["Capacity (MW)"],
+      "Status":r["Status"],
+      "Coordinates":r["Coordinates"]||`${r["Latitude"]},${r["Longitude"]}`,
+      "Coordinate accuracy":r["Location accuracy"],
+      Latitude:+r["Latitude"], Longitude:+r["Longitude"]
+    }))
+  },
+  steel:{
+    url:"https://raw.githubusercontent.com/open-energy-transition/gem_per_country/main/Global-Iron-and-Steel-Tracker-March-2025-V1.xlsx",
+    sheetIndex:[2,3],
+    process:(s3,s4)=>{
+      const map={}; s3.forEach(r=>map[r["Plant ID"]]={coord:r["Coordinates"],acc:r["Coordinate accuracy"],pow:r["Power source"]});
+      return s4.filter(r=>map[r["Plant ID"]]).map(r=>{
+        const m=map[r["Plant ID"]]; const [lat,lon]=(m.coord||"").split(",").map(Number);
+        return{
+          "Plant name (English)":r["Plant name (English)"],
+          "Country/Area":r["Country/Area"],
+          "Status":r["Status"],
+          "Power source":m.pow,
+          "Coordinates":m.coord,
+          "Coordinate accuracy":m.acc,
+          Latitude:lat,Longitude:lon
+        };
+      });
+    }
+  }
+};
+
+/* ---------------- STATE ---------------- */
+const ALLOWED_STATUS=new Set(["announced","construction","operating","retired"]);
+let sheetData=[], filteredData=[], currentPage=1; const rowsPerPage=2000;
+const statusEl=document.getElementById("status");
+
+/* ---------------- LOAD & PREPARE DATA ---------------- */
+async function fetchAndProcessExcel(){
+  statusEl.textContent="Loading dataset…";
+  try{
+    const key=datasetSelect.value, cfg=DATASETS[key];
+    const wb=XLSX.read(await (await fetch(cfg.url)).arrayBuffer(),{type:"array"});
+
+    sheetData = key==="power"
+      ? cfg.process( XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[cfg.sheetIndex]],{defval:""}) )
+      : cfg.process(
+          XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[cfg.sheetIndex[0]]],{defval:""}),
+          XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[cfg.sheetIndex[1]]],{defval:""})
+        );
+
+    sheetData.forEach(r=>{
+      r["Country/Area"]=(r["Country/Area"]||"").trim().toLowerCase();
+      if(isNaN(r.Latitude)||isNaN(r.Longitude)){
+        const [la,lo]=(r.Coordinates||"").split(",").map(Number);
+        r.Latitude=la||0;r.Longitude=lo||0;
       }
-    }
-    
-    function populateStatusDropdown(){
-      const dropdownOptions = document.getElementById("dropdownOptions");
-      dropdownOptions.innerHTML = "";
-      const statusSet = new Set();
-      sheetData.forEach(row => {
-        if(row["Status"] && row["Status"].trim() !== ""){
-          statusSet.add(row["Status"].trim());
-        }
-      });
-      const allLabel = document.createElement("label");
-      const allCheckbox = document.createElement("input");
-      allCheckbox.type = "checkbox";
-      allCheckbox.value = "all";
-      allCheckbox.id = "chk_all";
-      allLabel.appendChild(allCheckbox);
-      allLabel.appendChild(document.createTextNode(" All"));
-      dropdownOptions.appendChild(allLabel);
-      Array.from(statusSet).sort().forEach(status => {
-        const label = document.createElement("label");
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.value = status;
-        checkbox.id = "chk_" + status;
-        label.appendChild(checkbox);
-        label.appendChild(document.createTextNode(" " + status));
-        dropdownOptions.appendChild(label);
-      });
-      updateDropdownButton();
-      const checkboxes = dropdownOptions.querySelectorAll("input[type='checkbox']");
-      checkboxes.forEach(chk => {
-        chk.addEventListener("change", function(e){
-          if(this.value === "all" && this.checked){
-            checkboxes.forEach(cb => {
-              if(cb.value !== "all") cb.checked = false;
-            });
-          } else if(this.value !== "all" && this.checked){
-            const allCb = dropdownOptions.querySelector("input[value='all']");
-            if(allCb.checked) allCb.checked = false;
-          }
-          updateDropdownButton();
-        });
-      });
-    }
-    
-    function updateDropdownButton(){
-      const dropdownOptions = document.getElementById("dropdownOptions");
-      const checkboxes = dropdownOptions.querySelectorAll("input[type='checkbox']");
-      let selected = [];
-      checkboxes.forEach(chk => {
-        if(chk.checked) selected.push(chk.value);
-      });
-      const button = document.getElementById("dropdownButton");
-      if(selected.length === 0 || selected.includes("all")){
-        button.textContent = "All";
-      } else {
-        button.textContent = selected.join(", ");
-      }
-    }
-    
-    // New functions for Location Accuracy dropdown
-    function populateLocationDropdown(){
-      const dropdownOptions = document.getElementById("locationDropdownOptions");
-      dropdownOptions.innerHTML = "";
-      const accuracySet = new Set();
-      sheetData.forEach(row => {
-        if(row["Location accuracy"] && row["Location accuracy"].trim() !== ""){
-          accuracySet.add(row["Location accuracy"].trim());
-        }
-      });
-      const allLabel = document.createElement("label");
-      const allCheckbox = document.createElement("input");
-      allCheckbox.type = "checkbox";
-      allCheckbox.value = "all";
-      allCheckbox.id = "chk_loc_all";
-      allLabel.appendChild(allCheckbox);
-      allLabel.appendChild(document.createTextNode(" All"));
-      dropdownOptions.appendChild(allLabel);
-      Array.from(accuracySet).sort().forEach(accuracy => {
-        const label = document.createElement("label");
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.value = accuracy;
-        checkbox.id = "chk_loc_" + accuracy;
-        label.appendChild(checkbox);
-        label.appendChild(document.createTextNode(" " + accuracy));
-        dropdownOptions.appendChild(label);
-      });
-      updateLocationDropdownButton();
-      const checkboxes = dropdownOptions.querySelectorAll("input[type='checkbox']");
-      checkboxes.forEach(chk => {
-        chk.addEventListener("change", function(e){
-          if(this.value === "all" && this.checked){
-            checkboxes.forEach(cb => {
-              if(cb.value !== "all") cb.checked = false;
-            });
-          } else if(this.value !== "all" && this.checked){
-            const allCb = dropdownOptions.querySelector("input[value='all']");
-            if(allCb.checked) allCb.checked = false;
-          }
-          updateLocationDropdownButton();
-        });
-      });
-    }
-    
-    function updateLocationDropdownButton(){
-      const dropdownOptions = document.getElementById("locationDropdownOptions");
-      const checkboxes = dropdownOptions.querySelectorAll("input[type='checkbox']");
-      let selected = [];
-      checkboxes.forEach(chk => {
-        if(chk.checked) selected.push(chk.value);
-      });
-      const button = document.getElementById("locationDropdownButton");
-      if(selected.length === 0 || selected.includes("all")){
-        button.textContent = "All";
-      } else {
-        button.textContent = selected.join(", ");
-      }
-    }
-    
-    // Event listeners for dropdown buttons
-    document.getElementById("dropdownButton").addEventListener("click", function(e){
-      const options = document.getElementById("dropdownOptions");
-      options.style.display = options.style.display === "block" ? "none" : "block";
-      e.stopPropagation();
     });
-    document.getElementById("locationDropdownButton").addEventListener("click", function(e){
-      const options = document.getElementById("locationDropdownOptions");
-      options.style.display = options.style.display === "block" ? "none" : "block";
-      e.stopPropagation();
+
+    populateCountryDropdown();
+    populateStatusDropdown();
+    populateLocationDropdown();
+    previewContainer.innerHTML="";
+    statusEl.textContent=`Loaded ${sheetData.length.toLocaleString()} rows – select filters.`;
+  }catch(e){
+    statusEl.textContent="Error: "+e.message;
+  }
+}
+
+/* ---------------- COUNTRY DROPDOWN ---------------- */
+function populateCountryDropdown(){
+  countrySelect.innerHTML='<option disabled selected value="">— Select —</option>';
+  [...new Set(sheetData.map(r=>r["Country/Area"]).filter(Boolean))].sort()
+    .forEach(c=>{
+      const opt=document.createElement("option");
+      opt.value=c; opt.textContent=c.replace(/\b\w/g,l=>l.toUpperCase());
+      countrySelect.appendChild(opt);
     });
-    document.addEventListener("click", function(){
-      document.getElementById("dropdownOptions").style.display = "none";
-      document.getElementById("locationDropdownOptions").style.display = "none";
-    });
-    
-    function getSelectedStatuses(){
-      const dropdownOptions = document.getElementById("dropdownOptions");
-      const checkboxes = dropdownOptions.querySelectorAll("input[type='checkbox']");
-      let selected = [];
-      checkboxes.forEach(chk => {
-        if(chk.checked) selected.push(chk.value);
-      });
-      return selected;
-    }
-    
-    function getSelectedLocationAccuracies(){
-      const dropdownOptions = document.getElementById("locationDropdownOptions");
-      const checkboxes = dropdownOptions.querySelectorAll("input[type='checkbox']");
-      let selected = [];
-      checkboxes.forEach(chk => {
-        if(chk.checked) selected.push(chk.value);
-      });
-      return selected;
-    }
-    
-    function filterData(){
-      const country = document.getElementById("countryInput").value.trim().toLowerCase();
-      if(!country){ alert("Please enter a country name."); return []; }
-      if(!sheetData.length){ alert("No data loaded yet."); return []; }
-      let filtered = sheetData.filter(r => r["Country/area"] === country);
-      
-      // Filter by Status if selected
-      const selectedStatuses = getSelectedStatuses();
-      if(selectedStatuses.length !== 0 && !selectedStatuses.includes("all")){
-        filtered = filtered.filter(r => selectedStatuses.includes(r["Status"].trim()));
-      }
-      
-      // Filter by Location Accuracy if selected
-      const selectedAccuracies = getSelectedLocationAccuracies();
-      if(selectedAccuracies.length !== 0 && !selectedAccuracies.includes("all")){
-        filtered = filtered.filter(r => selectedAccuracies.includes(r["Location accuracy"].trim()));
-      }
-      
-      return filtered;
-    }
-    
-    function previewData(data, page = 1){
-      currentPage = page;
-      const container = document.getElementById("previewContainer");
-      container.innerHTML = "";
-      if(!data.length){ container.textContent = "No data found."; return; }
-      const totalPages = Math.ceil(data.length / rowsPerPage);
-      if(page < 1) page = 1;
-      if(page > totalPages) page = totalPages;
-      const startIndex = (page - 1) * rowsPerPage;
-      const endIndex = startIndex + rowsPerPage;
-      const pageData = data.slice(startIndex, endIndex);
-      const table = document.createElement("table");
-      const thead = document.createElement("thead");
-      const tbody = document.createElement("tbody");
-      const cols = Object.keys(pageData[0]);
-      const headerRow = document.createElement("tr");
-      cols.forEach(col => {
-        const th = document.createElement("th");
-        th.textContent = col;
-        headerRow.appendChild(th);
-      });
-      thead.appendChild(headerRow);
-      pageData.forEach(row => {
-        const tr = document.createElement("tr");
-        cols.forEach(col => {
-          const td = document.createElement("td");
-          td.textContent = row[col];
-          tr.appendChild(td);
-        });
-        tbody.appendChild(tr);
-      });
-      table.appendChild(thead);
-      table.appendChild(tbody);
-      container.appendChild(table);
-      if(totalPages > 1){
-        const pagination = document.createElement("div");
-        pagination.className = "pagination";
-        const prevBtn = document.createElement("button");
-        prevBtn.textContent = "Previous";
-        prevBtn.disabled = page === 1;
-        prevBtn.addEventListener("click", () => previewData(data, page - 1));
-        pagination.appendChild(prevBtn);
-        const pageInfo = document.createElement("span");
-        pageInfo.textContent = "Page " + page + " of " + totalPages;
-        pagination.appendChild(pageInfo);
-        const nextBtn = document.createElement("button");
-        nextBtn.textContent = "Next";
-        nextBtn.disabled = page === totalPages;
-        nextBtn.addEventListener("click", () => previewData(data, page + 1));
-        pagination.appendChild(nextBtn);
-        container.appendChild(pagination);
-      }
-    }
-    
-    function generateGeoJSON(d){
-      return {
-        type: "FeatureCollection",
-        features: d.map(r => ({
-          type: "Feature",
-          geometry: {
-            type: "Point",
-            coordinates: [r["Longitude"], r["Latitude"]]
-          },
-          properties: r
-        }))
-      };
-    }
-    
-    function downloadGeoJSON(g, n){
-      const fn = n.replace(/\s+/g, "_") + "_power_tracker.geojson";
-      const ds = "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(g, null, 2));
-      const a = document.createElement("a");
-      a.href = ds;
-      a.download = fn;
-      a.click();
-    }
-    
-    document.getElementById("previewBtn").addEventListener("click", () => {
-      filteredData = filterData();
-      previewData(filteredData, 1);
-    });
-    
-    document.getElementById("downloadBtn").addEventListener("click", () => {
-      if(!filteredData.length){ alert("No data to download."); return; }
-      const country = document.getElementById("countryInput").value.trim().toLowerCase();
-      downloadGeoJSON(generateGeoJSON(filteredData), country);
-    });
-    
-    window.addEventListener("load", fetchAndProcessExcel);
-  </script>
+}
+
+/* ---------------- MULTI-SELECT HELPERS ---------------- */
+function multiSelect(container,values){
+  container.innerHTML="";
+  const add=(val,label)=>{
+    const lab=document.createElement("label"),cb=document.createElement("input");
+    cb.type="checkbox";cb.value=val;lab.append(cb," ",label);container.appendChild(lab);
+  };
+  add("all","All"); values.forEach(v=>add(v,v));
+  container.querySelectorAll("input").forEach(cb=>{
+    cb.onchange=function(){
+      if(this.value==="all"&&this.checked)
+        container.querySelectorAll("input").forEach(b=>{if(b!==this)b.checked=false});
+      else if(this.checked)
+        container.querySelector('input[value="all"]').checked=false;
+      updateDropdownLabels();
+    };
+  });
+}
+function populateStatusDropdown(){
+  const s=new Set(sheetData.map(r=>(r.Status||"").trim().toLowerCase()).filter(v=>ALLOWED_STATUS.has(v)));
+  multiSelect(dropdownOptions,[...s].sort()); updateDropdownLabels();
+}
+function populateLocationDropdown(){
+  const a=new Set(sheetData.map(r=>(r["Coordinate accuracy"]||"").trim()).filter(Boolean));
+  multiSelect(locationDropdownOptions,[...a].sort()); updateDropdownLabels();
+}
+const listSel=id=>[...document.getElementById(id).querySelectorAll("input:checked")].map(c=>c.value).filter(v=>"all"!==v).join(", ");
+function updateDropdownLabels(){
+  dropdownButton.textContent = listSel("dropdownOptions") || "All";
+  locationDropdownButton.textContent = listSel("locationDropdownOptions") || "All";
+}
+
+/* ---------------- FILTERING & PREVIEW ---------------- */
+const checked=id=>[...document.getElementById(id).querySelectorAll("input:checked")].map(c=>c.value);
+function filterData(){
+  const country=countrySelect.value;
+  if(!country){alert("Select a country first.");return[];}
+  let out=sheetData.filter(r=>r["Country/Area"]===country);
+
+  const st=checked("dropdownOptions"); if(st.length&&!st.includes("all"))
+    out=out.filter(r=>st.includes((r.Status||"").trim().toLowerCase()));
+  const acc=checked("locationDropdownOptions"); if(acc.length&&!acc.includes("all"))
+    out=out.filter(r=>acc.includes((r["Coordinate accuracy"]||"").trim()));
+  return out;
+}
+function previewData(arr,page=1){
+  if(arr.length===0){previewContainer.innerHTML="<p>No results.</p>";statusEl.textContent="Showing 0 rows.";return;}
+  const pages=Math.ceil(arr.length/rowsPerPage); currentPage=Math.min(page,pages);
+  const slice=arr.slice((currentPage-1)*rowsPerPage,currentPage*rowsPerPage);
+  const cols=Object.keys(slice[0]);
+  let html="<table><thead><tr>"+cols.map(c=>`<th>${c}</th>`).join("")+"</tr></thead><tbody>";
+  slice.forEach(r=>{html+="<tr>"+cols.map(c=>`<td>${r[c]}</td>`).join("")+"</tr>";});
+  html+="</tbody></table>"+paginate(pages);
+  previewContainer.innerHTML=html;
+  [...document.querySelectorAll(".pageBtn")].forEach(b=>b.onclick=()=>previewData(arr,+b.dataset.p));
+  statusEl.textContent=`Showing ${arr.length.toLocaleString()} rows (page ${currentPage}/${pages}).`;
+}
+function paginate(pages){
+  if(pages<=1)return"";
+  let nav='<div class="pagination">';
+  for(let i=1;i<=pages;i++)
+    nav+=`<button class="pageBtn${i===currentPage?" active":""}" data-p="${i}">${i}</button>`;
+  return nav+"</div>";
+}
+
+/* ---------------- GEOJSON ---------------- */
+function toGeoJSON(arr){
+  return{type:"FeatureCollection",
+    features:arr.map(r=>({
+      type:"Feature",
+      geometry:{type:"Point",coordinates:[r.Longitude,r.Latitude]},
+      properties:Object.fromEntries(Object.entries(r).filter(([k])=>!["Latitude","Longitude"].includes(k)))
+    }))
+  };
+}
+function downloadGeoJSON(obj,fileName){
+  const url=URL.createObjectURL(new Blob([JSON.stringify(obj,null,2)],{type:"application/json"}));
+  const a=document.createElement("a"); a.href=url; a.download=fileName; a.click(); URL.revokeObjectURL(url);
+}
+
+/* ---------------- EVENTS ---------------- */
+datasetSelect.onchange=fetchAndProcessExcel;
+
+dropdownButton.onclick=e=>{toggle("dropdownOptions");e.stopPropagation();};
+locationDropdownButton.onclick=e=>{toggle("locationDropdownOptions");e.stopPropagation();};
+function toggle(id){const el=document.getElementById(id);el.style.display=el.style.display==="block"?"none":"block";}
+document.addEventListener("click",()=>{dropdownOptions.style.display="none";locationDropdownOptions.style.display="none";});
+
+previewBtn.onclick=()=>{filteredData=filterData();previewData(filteredData,1);};
+downloadBtn.onclick=()=>{
+  if(!filteredData.length){alert("Nothing to export");return;}
+  const country=countrySelect.value.toLowerCase();
+  const ds=datasetSelect.value;
+  const suffix = ds==="power" ? "gem_powerplant" : "gem_iron_steel";
+  const fileName=`${country}_${suffix}.geojson`;
+  downloadGeoJSON(toGeoJSON(filteredData),fileName);
+};
+
+/* ---------------- INIT ---------------- */
+window.addEventListener("load",fetchAndProcessExcel);
+</script>
 </body>
 </html>

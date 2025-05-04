@@ -1,6 +1,6 @@
 # GEM per Country
 
-This repository hosts the **GEM per Country Power Tracker** web application. The tool allows users to preview and download GeoJSON data for global power plants filtered by country and power plant status. 
+This repository hosts the **GEM per Country Power Tracker** web application. The tool allows users to preview and download GeoJSON data for global power plants filtered by country and power plant status. The tool also allows exporting a list of steel and iron plants which identifies large loads on the grid as curated by GEM, the same filters apply.
 
 ## Overview
 
