@@ -28,7 +28,9 @@ jobs:
           git config user.email "actions@github.com"
           git add Global-Integrated-Power-February-2025-update-II.xlsx Global-Iron-and-Steel-Tracker-March-2025-V1.xlsx
           git diff --quiet && git diff --staged --quiet || git commit -m "Update GEM data files"
-      
-      - name: Push changes
-        run: git push
+
+      - name: Pull remote changes and push
+        run: |
+          git pull origin main --rebase
+          git push origin main
 
