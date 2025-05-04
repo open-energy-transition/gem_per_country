@@ -3,7 +3,6 @@ name: Update Excel
 permissions:
   contents: write
 
-
 on:
   schedule:
     - cron: "0 0 * * *" 
@@ -16,17 +15,20 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@v3
 
-      - name: Download Excel file
+      - name: Download Excel files
         run: |
           curl -L -o Global-Integrated-Power-February-2025-update-II.xlsx \
             https://globalenergymonitor.org/wp-content/uploads/2025/02/Global-Integrated-Power-February-2025-update-II.xlsx
+          curl -L -o Global-Iron-and-Steel-Tracker-March-2025-V1.xlsx \
+            https://globalenergymonitor.org/wp-content/uploads/2025/03/Plant-level-data-Global-Iron-and-Steel-Tracker-March-2025-V1.xlsx
 
       - name: Commit changes
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add Global-Integrated-Power-February-2025-update-II.xlsx
-          git diff --quiet && git diff --staged --quiet || git commit -m "Update GEM PP Tracker file"
+          git add Global-Integrated-Power-February-2025-update-II.xlsx Global-Iron-and-Steel-Tracker-March-2025-V1.xlsx
+          git diff --quiet && git diff --staged --quiet || git commit -m "Update GEM data files"
       
       - name: Push changes
         run: git push
+
