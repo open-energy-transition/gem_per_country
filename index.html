@@ -43,22 +43,6 @@
       transform:translateY(-50%);font-size:12px;color:var(--c-text);pointer-events:none;
     }
 
-    /* ---------- multi-select dropdowns ---------- */
-    .dropdown{position:relative}
-    .dropdown-button{
-      width:100%;padding:10px;border-radius:var(--radius);
-      background:#ffffff15;cursor:pointer;user-select:none;font-size:14px
-    }
-    .dropdown-options{
-      position:absolute;left:0;right:0;top:calc(100% + 4px);
-      background:#000000cc;border-radius:var(--radius);
-      max-height:250px;overflow-y:auto;padding:10px;display:none;z-index:5
-    }
-    .dropdown-options label{
-      display:flex;align-items:center;font-size:13px;font-weight:400;margin-bottom:6px;cursor:pointer
-    }
-    .dropdown-options input{margin-right:6px}
-
     /* ---------- buttons ---------- */
     .btn-group{display:flex;gap:10px;margin-top:20px}
     .btn{
@@ -104,20 +88,6 @@
     <label>Country / Area</label>
     <div class="select-wrapper">
       <select id="countrySelect"><option disabled selected>Loading…</option></select>
-    </div>
-
-    <!-- STATUS -->
-    <label>Status</label>
-    <div id="statusDropdown" class="dropdown">
-      <div id="dropdownButton" class="dropdown-button">All</div>
-      <div id="dropdownOptions" class="dropdown-options"></div>
-    </div>
-
-    <!-- ACCURACY -->
-    <label>Coordinate accuracy</label>
-    <div id="locationDropdown" class="dropdown">
-      <div id="locationDropdownButton" class="dropdown-button">All</div>
-      <div id="locationDropdownOptions" class="dropdown-options"></div>
     </div>
 
     <!-- ACTION BUTTONS -->
@@ -171,7 +141,6 @@ const DATASETS={
 };
 
 /* ---------------- STATE ---------------- */
-const ALLOWED_STATUS=new Set(["announced","construction","operating","retired"]);
 let sheetData=[], filteredData=[], currentPage=1; const rowsPerPage=2000;
 const statusEl=document.getElementById("status");
 
@@ -198,10 +167,8 @@ async function fetchAndProcessExcel(){
     });
 
     populateCountryDropdown();
-    populateStatusDropdown();
-    populateLocationDropdown();
     previewContainer.innerHTML="";
-    statusEl.textContent=`Loaded ${sheetData.length.toLocaleString()} rows – select filters.`;
+    statusEl.textContent=`Loaded ${sheetData.length.toLocaleString()} rows – select a country.`;
   }catch(e){
     statusEl.textContent="Error: "+e.message;
   }
@@ -218,51 +185,13 @@ function populateCountryDropdown(){
     });
 }
 
-/* ---------------- MULTI-SELECT HELPERS ---------------- */
-function multiSelect(container,values){
-  container.innerHTML="";
-  const add=(val,label)=>{
-    const lab=document.createElement("label"),cb=document.createElement("input");
-    cb.type="checkbox";cb.value=val;lab.append(cb," ",label);container.appendChild(lab);
-  };
-  add("all","All"); values.forEach(v=>add(v,v));
-  container.querySelectorAll("input").forEach(cb=>{
-    cb.onchange=function(){
-      if(this.value==="all"&&this.checked)
-        container.querySelectorAll("input").forEach(b=>{if(b!==this)b.checked=false});
-      else if(this.checked)
-        container.querySelector('input[value="all"]').checked=false;
-      updateDropdownLabels();
-    };
-  });
-}
-function populateStatusDropdown(){
-  const s=new Set(sheetData.map(r=>(r.Status||"").trim().toLowerCase()).filter(v=>ALLOWED_STATUS.has(v)));
-  multiSelect(dropdownOptions,[...s].sort()); updateDropdownLabels();
-}
-function populateLocationDropdown(){
-  const a=new Set(sheetData.map(r=>(r["Coordinate accuracy"]||"").trim()).filter(Boolean));
-  multiSelect(locationDropdownOptions,[...a].sort()); updateDropdownLabels();
-}
-const listSel=id=>[...document.getElementById(id).querySelectorAll("input:checked")].map(c=>c.value).filter(v=>"all"!==v).join(", ");
-function updateDropdownLabels(){
-  dropdownButton.textContent = listSel("dropdownOptions") || "All";
-  locationDropdownButton.textContent = listSel("locationDropdownOptions") || "All";
-}
-
 /* ---------------- FILTERING & PREVIEW ---------------- */
-const checked=id=>[...document.getElementById(id).querySelectorAll("input:checked")].map(c=>c.value);
 function filterData(){
   const country=countrySelect.value;
   if(!country){alert("Select a country first.");return[];}
-  let out=sheetData.filter(r=>r["Country/Area"]===country);
-
-  const st=checked("dropdownOptions"); if(st.length&&!st.includes("all"))
-    out=out.filter(r=>st.includes((r.Status||"").trim().toLowerCase()));
-  const acc=checked("locationDropdownOptions"); if(acc.length&&!acc.includes("all"))
-    out=out.filter(r=>acc.includes((r["Coordinate accuracy"]||"").trim()));
-  return out;
+  return sheetData.filter(r=>r["Country/Area"]===country);
 }
+
 function previewData(arr,page=1){
   if(arr.length===0){previewContainer.innerHTML="<p>No results.</p>";statusEl.textContent="Showing 0 rows.";return;}
   const pages=Math.ceil(arr.length/rowsPerPage); currentPage=Math.min(page,pages);
@@ -275,6 +204,7 @@ function previewData(arr,page=1){
   [...document.querySelectorAll(".pageBtn")].forEach(b=>b.onclick=()=>previewData(arr,+b.dataset.p));
   statusEl.textContent=`Showing ${arr.length.toLocaleString()} rows (page ${currentPage}/${pages}).`;
 }
+
 function paginate(pages){
   if(pages<=1)return"";
   let nav='<div class="pagination">';
@@ -293,6 +223,7 @@ function toGeoJSON(arr){
     }))
   };
 }
+
 function downloadGeoJSON(obj,fileName){
   const url=URL.createObjectURL(new Blob([JSON.stringify(obj,null,2)],{type:"application/json"}));
   const a=document.createElement("a"); a.href=url; a.download=fileName; a.click(); URL.revokeObjectURL(url);
@@ -300,11 +231,6 @@ function downloadGeoJSON(obj,fileName){
 
 /* ---------------- EVENTS ---------------- */
 datasetSelect.onchange=fetchAndProcessExcel;
-
-dropdownButton.onclick=e=>{toggle("dropdownOptions");e.stopPropagation();};
-locationDropdownButton.onclick=e=>{toggle("locationDropdownOptions");e.stopPropagation();};
-function toggle(id){const el=document.getElementById(id);el.style.display=el.style.display==="block"?"none":"block";}
-document.addEventListener("click",()=>{dropdownOptions.style.display="none";locationDropdownOptions.style.display="none";});
 
 previewBtn.onclick=()=>{filteredData=filterData();previewData(filteredData,1);};
 downloadBtn.onclick=()=>{
