@@ -310,7 +310,7 @@ var give_stripe_vars = {"zero_based_currency":"","zero_based_currencies_list":["
 <script type="text/javascript" src="https://globalenergymonitor.org/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.4.1" id="jquery-migrate-js"></script>
 <script type="text/javascript" id="give-js-extra">
 /* <![CDATA[ */
-var give_global_vars = {"ajaxurl":"https:\/\/globalenergymonitor.org\/wp-admin\/admin-ajax.php","checkout_nonce":"ded101a031","currency":"USD","currency_sign":"$","currency_pos":"before","thousands_separator":",","decimal_separator":".","no_gateway":"Please select a payment method.","bad_minimum":"The minimum custom donation amount for this form is","bad_maximum":"The maximum custom donation amount for this form is","general_loading":"Loading...","purchase_loading":"Please Wait...","textForOverlayScreen":"<h3>Processing...<\/h3><p>This will only take a second!<\/p>","number_decimals":"2","is_test_mode":"","give_version":"4.12.0","magnific_options":{"main_class":"give-modal","close_on_bg_click":false},"form_translation":{"payment-mode":"Please select payment mode.","give_first":"Please enter your first name.","give_last":"Please enter your last name.","give_email":"Please enter a valid email address.","give_user_login":"Invalid email address or username.","give_user_pass":"Enter a password.","give_user_pass_confirm":"Enter the password confirmation.","give_agree_to_terms":"You must agree to the terms and conditions."},"confirm_email_sent_message":"Please check your email and click on the link to access your complete donation history.","ajax_vars":{"ajaxurl":"https:\/\/globalenergymonitor.org\/wp-admin\/admin-ajax.php","ajaxNonce":"90093ebe06","loading":"Loading","select_option":"Please select an option","default_gateway":"stripe","permalinks":"1","number_decimals":2},"cookie_hash":"09b03c6c56196db154081e663b68685c","session_nonce_cookie_name":"wp-give_session_reset_nonce_09b03c6c56196db154081e663b68685c","session_cookie_name":"wp-give_session_09b03c6c56196db154081e663b68685c","delete_session_nonce_cookie":"0"};
+var give_global_vars = {"ajaxurl":"https:\/\/globalenergymonitor.org\/wp-admin\/admin-ajax.php","checkout_nonce":"15c76bf810","currency":"USD","currency_sign":"$","currency_pos":"before","thousands_separator":",","decimal_separator":".","no_gateway":"Please select a payment method.","bad_minimum":"The minimum custom donation amount for this form is","bad_maximum":"The maximum custom donation amount for this form is","general_loading":"Loading...","purchase_loading":"Please Wait...","textForOverlayScreen":"<h3>Processing...<\/h3><p>This will only take a second!<\/p>","number_decimals":"2","is_test_mode":"","give_version":"4.12.0","magnific_options":{"main_class":"give-modal","close_on_bg_click":false},"form_translation":{"payment-mode":"Please select payment mode.","give_first":"Please enter your first name.","give_last":"Please enter your last name.","give_email":"Please enter a valid email address.","give_user_login":"Invalid email address or username.","give_user_pass":"Enter a password.","give_user_pass_confirm":"Enter the password confirmation.","give_agree_to_terms":"You must agree to the terms and conditions."},"confirm_email_sent_message":"Please check your email and click on the link to access your complete donation history.","ajax_vars":{"ajaxurl":"https:\/\/globalenergymonitor.org\/wp-admin\/admin-ajax.php","ajaxNonce":"53ffc3a2fc","loading":"Loading","select_option":"Please select an option","default_gateway":"stripe","permalinks":"1","number_decimals":2},"cookie_hash":"09b03c6c56196db154081e663b68685c","session_nonce_cookie_name":"wp-give_session_reset_nonce_09b03c6c56196db154081e663b68685c","session_cookie_name":"wp-give_session_09b03c6c56196db154081e663b68685c","delete_session_nonce_cookie":"0"};
 var giveApiSettings = {"root":"https:\/\/globalenergymonitor.org\/wp-json\/give-api\/v2\/","rest_base":"give-api\/v2"};
 /* ]]> */
 </script>
@@ -460,7 +460,7 @@ var giveApiSettings = {"root":"https:\/\/globalenergymonitor.org\/wp-json\/give-
             </div>
           </summary>
           <div class="lang-dropdown__options">
-            <div class="gtranslate_wrapper" id="gt-wrapper-88813271"></div>
+            <div class="gtranslate_wrapper" id="gt-wrapper-35272124"></div>
           </div>
         </details>
         
@@ -721,7 +721,7 @@ Covina, CA 91723</address>
 <script type="text/javascript" id="wp-api-fetch-js-after">
 /* <![CDATA[ */
 wp.apiFetch.use( wp.apiFetch.createRootURLMiddleware( "https://globalenergymonitor.org/wp-json/" ) );
-wp.apiFetch.nonceMiddleware = wp.apiFetch.createNonceMiddleware( "fc02796324" );
+wp.apiFetch.nonceMiddleware = wp.apiFetch.createNonceMiddleware( "a509b0c90d" );
 wp.apiFetch.use( wp.apiFetch.nonceMiddleware );
 wp.apiFetch.use( wp.apiFetch.mediaUploadMiddleware );
 wp.apiFetch.nonceEndpoint = "https://globalenergymonitor.org/wp-admin/admin-ajax.php?action=rest-nonce";
@@ -806,16 +806,16 @@ var GiveDonationSummaryData = {"currencyPrecisionLookup":{"USD":2,"EUR":2,"GBP":
 <script type="text/javascript" src="https://globalenergymonitor.org/wp-content/plugins/give/build/assets/dist/js/give-donation-summary.js?ver=4.12.0" id="give-donation-summary-script-frontend-js"></script>
 <script type="text/javascript" id="gforms_recaptcha_recaptcha-js-extra">
 /* <![CDATA[ */
-var gforms_recaptcha_recaptcha_strings = {"nonce":"7514fddb77","disconnect":"Disconnecting","change_connection_type":"Resetting","spinner":"https:\/\/globalenergymonitor.org\/wp-content\/plugins\/gravityforms\/images\/spinner.svg","connection_type":"classic","disable_badge":"1","change_connection_type_title":"Change Connection Type","change_connection_type_message":"Changing the connection type will delete your current settings.  Do you want to proceed?","disconnect_title":"Disconnect","disconnect_message":"Disconnecting from reCAPTCHA will delete your current settings.  Do you want to proceed?","site_key":"6LeTBbsmAAAAANhs-025pBTMyWwbCLBoUkw9AVBm"};
+var gforms_recaptcha_recaptcha_strings = {"nonce":"1177ad058c","disconnect":"Disconnecting","change_connection_type":"Resetting","spinner":"https:\/\/globalenergymonitor.org\/wp-content\/plugins\/gravityforms\/images\/spinner.svg","connection_type":"classic","disable_badge":"1","change_connection_type_title":"Change Connection Type","change_connection_type_message":"Changing the connection type will delete your current settings.  Do you want to proceed?","disconnect_title":"Disconnect","disconnect_message":"Disconnecting from reCAPTCHA will delete your current settings.  Do you want to proceed?","site_key":"6LeTBbsmAAAAANhs-025pBTMyWwbCLBoUkw9AVBm"};
 /* ]]> */
 </script>
 <script type="text/javascript" src="https://www.google.com/recaptcha/api.js?render=6LeTBbsmAAAAANhs-025pBTMyWwbCLBoUkw9AVBm&amp;ver=2.0.0" id="gforms_recaptcha_recaptcha-js" defer="defer" data-wp-strategy="defer"></script>
 <script type="text/javascript" src="https://globalenergymonitor.org/wp-content/plugins/gravityformsrecaptcha/js/frontend.min.js?ver=2.0.0" id="gforms_recaptcha_frontend-js" defer="defer" data-wp-strategy="defer"></script>
 <script type="text/javascript" src="https://globalenergymonitor.org/wp-content/themes/globalenergymonitor/dist/../resources/accessible-mega-menu/jquery-accessibleMegaMenu.js" id="accessible-mega-menu-js"></script>
 <script type="text/javascript" src="https://globalenergymonitor.org/wp-content/themes/globalenergymonitor/dist/scripts/main_b5f57e29.js" id="sage/main.js-js"></script>
-<script type="text/javascript" id="gt_widget_script_88813271-js-before">
+<script type="text/javascript" id="gt_widget_script_35272124-js-before">
 /* <![CDATA[ */
-window.gtranslateSettings = /* document.write */ window.gtranslateSettings || {};window.gtranslateSettings['88813271'] = {"default_language":"en","languages":["en","id","de","es","fr","it","pt","vi","tr","ru","ar","fa","hi","zh-CN","ja","ko"],"url_structure":"sub_directory","native_language_names":1,"wrapper_selector":"#gt-wrapper-88813271","horizontal_position":"inline","flags_location":"\/wp-content\/plugins\/gtranslate\/flags\/"};
+window.gtranslateSettings = /* document.write */ window.gtranslateSettings || {};window.gtranslateSettings['35272124'] = {"default_language":"en","languages":["en","id","de","es","fr","it","pt","vi","tr","ru","ar","fa","hi","zh-CN","ja","ko"],"url_structure":"sub_directory","native_language_names":1,"wrapper_selector":"#gt-wrapper-35272124","horizontal_position":"inline","flags_location":"\/wp-content\/plugins\/gtranslate\/flags\/"};
 /* ]]> */
-</script><script src="https://globalenergymonitor.org/wp-content/plugins/gtranslate/js/ln.js?ver=6.8.3" data-no-optimize="1" data-no-minify="1" data-gt-orig-url="/wp-content/uploads/2025/03/Plant-level-data-Global-Iron-and-Steel-Tracker-March-2025-V1.xlsx" data-gt-orig-domain="globalenergymonitor.org" data-gt-widget-id="88813271" defer></script>  </body>
+</script><script src="https://globalenergymonitor.org/wp-content/plugins/gtranslate/js/ln.js?ver=6.8.3" data-no-optimize="1" data-no-minify="1" data-gt-orig-url="/wp-content/uploads/2025/03/Plant-level-data-Global-Iron-and-Steel-Tracker-March-2025-V1.xlsx" data-gt-orig-domain="globalenergymonitor.org" data-gt-widget-id="35272124" defer></script>  </body>
 </html>
