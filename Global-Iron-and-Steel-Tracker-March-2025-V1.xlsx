@@ -48,7 +48,7 @@
       plausible.init()
     </script>
 
-    <script src="/libraries/klaro/dist/klaro-no-translations-no-css.js?tex7k2" defer id="klaro-js"></script>
+    <script src="/libraries/klaro/dist/klaro-no-translations-no-css.js?tf0yap" defer id="klaro-js"></script>
 
     <meta content="width=device-width, initial-scale=1" name="viewport">
 
@@ -907,11 +907,11 @@
                 <div class="column footer-col">
                   <h5 class="footer-heading">Browse data</h5>
                                     <a href="/oil-and-gas" class="footer-link" data-drupal-link-system-path="taxonomy/term/27">Oil and gas</a>
-          <a href="/coal" class="footer-link" data-drupal-link-system-path="taxonomy/term/26">Coal</a>
+          <a href="/coal" class="footer-link">Coal</a>
           <a href="/renewables-other-power" class="footer-link">Renewables and other power</a>
-          <a href="/heavy-industry" class="footer-link" data-drupal-link-system-path="taxonomy/term/30">Heavy industry</a>
+          <a href="/heavy-industry" class="footer-link">Heavy industry</a>
           <a href="/finance" class="footer-link">Finance and corporates</a>
-          <a href="/energy-transition" class="footer-link" data-drupal-link-system-path="taxonomy/term/31">Energy transition</a>
+          <a href="/energy-transition" class="footer-link">Energy transition</a>
       
                         </div>
           <div class="column footer-col">
